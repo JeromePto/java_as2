@@ -1,8 +1,12 @@
 package client_server;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Scanner;
 
 import commonData.*;
 
@@ -79,7 +83,7 @@ public class Client {
     		}
     		else
     		{
-    			System.out.println("XX. Server sent back: " + dataRecived.getMessage() + "\nShutting Down");
+    			System.out.println("XX. Server sent back: " + dataRecived.getMessage() + "\nProgram Exit");
     			running = false;
     			connected = false;
     		}
@@ -125,9 +129,28 @@ public class Client {
     private DataClientToServer readingData()
     {
     	
-    	float temperature = 7;
+    	float temperature = 0;
+    	File f = null;
+    	Scanner sc = null;
     	
-    	
+    	try {
+    		f = new File("coucou");
+    		sc = new Scanner(f);
+    		String tmp = sc.nextLine();
+    		sc.close();
+    		if(tmp.length() != 5) throw new Exception("Error in data form");
+			temperature = new Float(tmp.substring(0, 2) + "." + tmp.substring(2, 5));
+		}
+    	catch (FileNotFoundException e) {
+    		System.out.println("XX. Exception with File location: " +  e.toString());
+    		System.out.println("Program Exit");
+    		System.exit(-1);
+		}
+    	catch (Exception e) {
+    		System.out.println("XX. Exception with data: " +  e.toString());
+    		System.out.println("Program Exit");
+    		System.exit(-1);
+    	}
     	
     	DataClientToServer data = new DataClientToServer(name, temperature);
     	
@@ -135,7 +158,7 @@ public class Client {
     }
 
     public static void main(String args[]) 
-    {
+    {    	
     	System.out.println("**. Java Client Application - EE402 OOP Module, DCU");
     	try {
     		if(args.length != 3) {
