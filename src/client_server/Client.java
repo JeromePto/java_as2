@@ -2,7 +2,6 @@ package client_server;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -13,19 +12,27 @@ import commonData.*;
 public class Client {
 	
 	//private static int portNumber = 5050;
+	
+	private static float tmpMax = 80f;
+	private static float tmpMin = 20f;
+	
     private Socket socket = null;
     private ObjectOutputStream os = null;
     private ObjectInputStream is = null;
     private String name;
 	private int sampleRate;
+	private long shift;
 	private boolean running;
 	private boolean connected;
 	private long startTime;
+	private static boolean verbose = false;
+	private static boolean randomize = false;
 
 	// the constructor expects the IP address of the server - the port is fixed
     public Client(String serverIP, int portNumber, String name) {
     	this.running = true;
     	this.sampleRate = 1000;
+    	this.shift = 0;
     	
     	this.name = name;
     	
@@ -40,11 +47,10 @@ public class Client {
 	    	
 	    	while(this.connected) {
 	    		startTime = System.currentTimeMillis();
-	    		// Task
 	    		
 	    		getData(readingData());
 	    		
-	    		while(System.currentTimeMillis() < startTime + sampleRate) {}
+	    		while(System.currentTimeMillis() < startTime + sampleRate - shift) {}
 	    	}
     	}
     }
@@ -68,13 +74,17 @@ public class Client {
     }
     
     private void getData(DataClientToServer dataToSend) {
-    	DataServerToClient dataRecived;
-    	System.out.println("01. -> Sending Command (" + dataToSend.toString() + ") to the server...");
+    	DataServerToClient dataRecived = null;
+    	System.out.println("01. -> Sending Command (" + dataToSend.toString() + ")");
     	this.send(dataToSend);
     	try{
+    		//dataRecived = null;
     		dataRecived = (DataServerToClient) receive();
     		
+    		System.out.println("01. <- Received a DataServerToClient object from the client (" + dataRecived.toString() + ").");
+    		
     		sampleRate = dataRecived.getSampleRate();
+    		shift = dataRecived.getShift();
     		if(dataRecived.getMessage().equals("CREATED")) {
     			
     		}
@@ -88,19 +98,19 @@ public class Client {
     			connected = false;
     		}
     		
-    		System.out.println("05. <- The Server responded with: ");
-    		System.out.println("    <- " + dataRecived.toString());
+    		if(verbose) System.out.println("05. <- The Server responded with: ");
+    		if(verbose) System.out.println("    <- " + dataRecived.toString());
     	}
     	catch (Exception e){
     		System.out.println("XX. There was an invalid object sent back from the server");
     	}
-    	System.out.println("06. -- Disconnected from Server.");
+    	//System.out.println("06. -- Disconnected from Server.");
 }
 	
     // method to send a generic object.
     private void send(Object o) {
 		try {
-		    System.out.println("02. -> Sending an object...");
+			if(verbose) System.out.println("02. -> Sending an object...");
 		    os.writeObject(o);
 		    os.flush();
 		} 
@@ -115,9 +125,9 @@ public class Client {
     {
 		Object o = null;
 		try {
-			System.out.println("03. -- About to receive an object...");
+			if(verbose) System.out.println("03. -- About to receive an object...");
 		    o = is.readObject();
-		    System.out.println("04. <- Object received...");
+		    if(verbose) System.out.println("04. <- Object received...");
 		} 
 	    catch (Exception e) {
 		    System.out.println("XX. Exception Occurred on Receiving:" + e.toString());
@@ -125,7 +135,6 @@ public class Client {
 		}
 		return o;
     }
-    
     private DataClientToServer readingData()
     {
     	
@@ -152,29 +161,45 @@ public class Client {
     		System.exit(-1);
     	}
     	
-    	DataClientToServer data = new DataClientToServer(name, temperature);
+    	if(randomize) temperature = random(temperature);
+    	long time = System.currentTimeMillis();
+    	
+    	DataClientToServer data = new DataClientToServer(name, temperature, time);
     	
     	return data;
+    }
+    
+    private static float random(float a) {
+    	return Math.round(1000f*((float)(Math.random()*(tmpMax/a-tmpMin/a)+tmpMin/a)*a))/1000f;
     }
 
     public static void main(String args[]) 
     {    	
     	System.out.println("**. Java Client Application - EE402 OOP Module, DCU");
     	try {
-    		if(args.length != 3) {
+    		if(args.length < 3) {
     			throw new IllegalArgumentException("3 Parameters needed, " + args.length + " passed");
     		}
     		
     		int portNumber = new Integer(args[1]);
     		
+    		if(args.length == 4) {
+    			if(args[3].contains("v")) {
+    				verbose = true;
+    			}
+    			if(args[3].contains("r")) {
+    				randomize = true;
+    			}
+    		}
+    		
     		new Client(args[0], portNumber, args[2]);
     		
     	}
     	catch(NumberFormatException e) {
-    		System.out.println("Invalid string for conversion to int: " + e.getMessage());
+    		System.out.println("Invalid string for conversion to int: " + e.toString());
     	}
     	catch(Exception e) {
-    		System.out.println("Exception Occurred: " + e.getMessage());	
+    		System.out.println("Exception Occurred: " + e.toString());
     	}
     	System.out.println("**. End of Application.");
     }

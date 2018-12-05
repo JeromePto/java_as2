@@ -5,19 +5,26 @@ import java.util.Calendar;
 
 public class DataClientToServer implements Serializable{
 	
+	private static final long serialVersionUID = 1L;
 	private String name;
 	private float temperature;
 	private Calendar calendar;
+	private long time;
 
-	public DataClientToServer(String name, float temperature) {
+	public DataClientToServer(String name, float temperature, long time) {
 		this.calendar = Calendar.getInstance();
 		this.name = name;
 		this.temperature = temperature;
+		this.time = time;
 	}
 	
 	public String toString()
 	{
-		return "Client: " + name + "\nDate: " + this.calendar.getTime().toString() + "\nTemperature: " + temperature;
+		return "Client: " + name + " Date: " + this.calendar.getTime().toString() + " Time: " + time + " Temperature: " + temperature;
+	}
+	
+	public long getTime() {
+		return time;
 	}
 	
 	public String getName() {
