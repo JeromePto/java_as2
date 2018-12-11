@@ -38,4 +38,8 @@ public class DataClientToServer implements Serializable{
 	public Calendar getCalendar() {
 		return calendar;
 	}
+	
+	public void setTime(long time) {
+		this.time = time;
+	}
 }

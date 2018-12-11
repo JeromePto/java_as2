@@ -8,13 +8,11 @@ public class DataServerToClient implements Serializable{
 	private int sampleRate;
 	private String message;
 	private long shift;
-	private long timeSync;
 
-	public DataServerToClient(int samplingRate, long shift, long timeSync) {
+	public DataServerToClient(int samplingRate, long shift) {
 		this.sampleRate = samplingRate;
 		this.shift = shift;
 		this.message = "CREATED";
-		this.timeSync = timeSync;
 	}
 	
 	public String toString() {
@@ -23,10 +21,6 @@ public class DataServerToClient implements Serializable{
 	
 	public long getShift() {
 		return shift;
-	}
-	
-	public long getTimeSync() {
-		return timeSync;
 	}
 	
 	public int getSampleRate() {

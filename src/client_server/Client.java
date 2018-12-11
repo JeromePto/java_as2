@@ -33,7 +33,6 @@ public class Client {
 	private static boolean randomize = false;
 	private String fileLocation = "coucou";
 	private boolean ledOk;
-	private long syncShift;
 	
 	
 	// TODO faire led clignote
@@ -43,7 +42,6 @@ public class Client {
     	this.sampleRate = 1000;
     	this.shift = 0;
     	this.ledOk = false;
-    	this.syncShift = 0;
     	
     	this.name = name;
     	
@@ -80,7 +78,7 @@ public class Client {
 	    	}
 	    	
 	    	while(this.connected) {
-	    		startTime = getSyncMillis();
+	    		startTime = System.currentTimeMillis();
 	    		
 	    		getData(readingData());
 	    		
@@ -96,7 +94,7 @@ public class Client {
 	    			shift = 0;
 	    		}
 	    		setLed(false);
-	    		while(getSyncMillis() < startTime + sampleRate - shift) {}
+	    		while(System.currentTimeMillis() < startTime + sampleRate - shift) {}
 	    	}
     	}
     }
@@ -131,7 +129,6 @@ public class Client {
     		
     		sampleRate = dataRecived.getSampleRate();
     		shift = dataRecived.getShift();
-    		syncShift = dataRecived.getTimeSync()-System.currentTimeMillis();
     		if(dataRecived.getMessage().equals("CREATED")) {
     			
     		}
@@ -210,7 +207,7 @@ public class Client {
     	}
     	
     	if(randomize) temperature = random(temperature);
-    	long time = getSyncMillis();
+    	long time = System.currentTimeMillis();
     	
     	DataClientToServer data = new DataClientToServer(name, temperature, time);
     	
@@ -234,10 +231,6 @@ public class Client {
 				ledOk = false;
     		}
     	}
-    }
-    
-    private long getSyncMillis() {
-    	return System.currentTimeMillis() + syncShift;
     }
 
     public static void main(String args[]) 
