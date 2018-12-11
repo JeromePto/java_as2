@@ -84,11 +84,11 @@ public class Client {
 	    		
 	    		if(verbose) System.out.println("Wait for " + (sampleRate - shift) + " ms");
 	    		try {
-					Thread.sleep((long)((sampleRate - shift)*0.8f));
+					Thread.sleep((long)((sampleRate - shift)*0.5f));
 				} catch (InterruptedException e) {
 					System.out.println("Error in the wait: " + e.toString());
 				}
-	    		
+	    		setLed(false);
 	    		while(System.currentTimeMillis() < startTime + sampleRate - shift) {}
 	    	}
     	}
@@ -163,7 +163,6 @@ public class Client {
     // method to receive a generic object.
     private Object receive() 
     {
-    	setLed(false);
 		Object o = null;
 		try {
 			if(verbose) System.out.println("03. -- About to receive an object...");
