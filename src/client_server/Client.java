@@ -33,6 +33,7 @@ public class Client {
 	private static boolean randomize = false;
 	private String fileLocation = "coucou";
 	private boolean ledOk;
+	private long syncShift;
 	
 	
 	// TODO faire led clignote
@@ -42,6 +43,7 @@ public class Client {
     	this.sampleRate = 1000;
     	this.shift = 0;
     	this.ledOk = false;
+    	this.syncShift = 0;
     	
     	this.name = name;
     	
@@ -78,18 +80,23 @@ public class Client {
 	    	}
 	    	
 	    	while(this.connected) {
-	    		startTime = System.currentTimeMillis();
+	    		startTime = getSyncMillis();
 	    		
 	    		getData(readingData());
 	    		
 	    		if(verbose) System.out.println("Wait for " + (sampleRate - shift) + " ms");
 	    		try {
 					Thread.sleep((long)((sampleRate - shift)*0.3f));
-				} catch (InterruptedException e) {
+				} 
+	    		catch (InterruptedException e) {
 					System.out.println("Error in the wait: " + e.toString());
 				}
+	    		catch (IllegalArgumentException e) {
+	    			e.printStackTrace();
+	    			shift = 0;
+	    		}
 	    		setLed(false);
-	    		while(System.currentTimeMillis() < startTime + sampleRate - shift) {}
+	    		while(getSyncMillis() < startTime + sampleRate - shift) {}
 	    	}
     	}
     }
@@ -124,6 +131,7 @@ public class Client {
     		
     		sampleRate = dataRecived.getSampleRate();
     		shift = dataRecived.getShift();
+    		syncShift = dataRecived.getTimeSync()-System.currentTimeMillis();
     		if(dataRecived.getMessage().equals("CREATED")) {
     			
     		}
@@ -182,10 +190,6 @@ public class Client {
     	File f = null;
     	Scanner sc = null;
     	
-    	
-    	
-    	// TODO mettre system raspberry
-    	
     	try {
     		f = new File(fileLocation);
     		sc = new Scanner(f);
@@ -206,7 +210,7 @@ public class Client {
     	}
     	
     	if(randomize) temperature = random(temperature);
-    	long time = System.currentTimeMillis();
+    	long time = getSyncMillis();
     	
     	DataClientToServer data = new DataClientToServer(name, temperature, time);
     	
@@ -230,6 +234,10 @@ public class Client {
 				ledOk = false;
     		}
     	}
+    }
+    
+    private long getSyncMillis() {
+    	return System.currentTimeMillis() + syncShift;
     }
 
     public static void main(String args[]) 
