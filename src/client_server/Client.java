@@ -84,7 +84,7 @@ public class Client {
 	    		
 	    		if(verbose) System.out.println("Wait for " + (sampleRate - shift) + " ms");
 	    		try {
-					Thread.sleep((long)((sampleRate - shift)*0.5f));
+					Thread.sleep((long)((sampleRate - shift)*0.3f));
 				} catch (InterruptedException e) {
 					System.out.println("Error in the wait: " + e.toString());
 				}
