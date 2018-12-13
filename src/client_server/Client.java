@@ -14,10 +14,7 @@ import commonData.*;
 
 public class Client {
 	
-	//private static int portNumber = 5050;
-	
-	private static float tmpMax = 80f;
-	private static float tmpMin = 20f;
+	private static int portNumberStatic = 5050;
 	private static String LED0_PATH = "/sys/class/leds/led0";
 	
     private Socket socket = null;
@@ -25,7 +22,6 @@ public class Client {
     private ObjectInputStream is = null;
     private String name;
 	private int sampleRate;
-	private long shift;
 	private boolean running;
 	private boolean connected;
 	private long startTime;
@@ -33,15 +29,17 @@ public class Client {
 	private static boolean randomize = false;
 	private String fileLocation = "coucou";
 	private boolean ledOk;
+	private SmoothRandom sr;
+	private SmoothRandom sr2;
 	
 	
-	// TODO faire led clignote
 	// the constructor expects the IP address of the server - the port is fixed
     public Client(String serverIP, int portNumber, String name) {
     	this.running = true;
     	this.sampleRate = 1000;
-    	this.shift = 0;
     	this.ledOk = false;
+    	this.sr = new SmoothRandom(0.03d);
+    	this.sr2 = new SmoothRandom(0.07d);
     	
     	this.name = name;
     	
@@ -82,19 +80,18 @@ public class Client {
 	    		
 	    		getData(readingData());
 	    		
-	    		if(verbose) System.out.println("Wait for " + (sampleRate - shift) + " ms");
+	    		if(verbose) System.out.println("Wait for " + sampleRate + " ms");
 	    		try {
-					Thread.sleep((long)((sampleRate - shift)*0.3f));
+					Thread.sleep((long)((float)(sampleRate)*0.3f));
 				} 
 	    		catch (InterruptedException e) {
 					System.out.println("Error in the wait: " + e.toString());
 				}
 	    		catch (IllegalArgumentException e) {
-	    			e.printStackTrace();
-	    			shift = 0;
+	    			System.out.println("Error: " + e.toString());
 	    		}
 	    		setLed(false);
-	    		while(System.currentTimeMillis() < startTime + sampleRate - shift) {}
+	    		while(System.currentTimeMillis() < startTime + sampleRate) {}
 	    	}
     	}
     }
@@ -128,7 +125,6 @@ public class Client {
     		System.out.println("01. <- Received a DataServerToClient object from the client (" + dataRecived.toString() + ").");
     		
     		sampleRate = dataRecived.getSampleRate();
-    		shift = dataRecived.getShift();
     		if(dataRecived.getMessage().equals("CREATED")) {
     			
     		}
@@ -214,8 +210,8 @@ public class Client {
     	return data;
     }
     
-    private static float random(float a) {
-    	return Math.round(1000f*((float)(Math.random()*(tmpMax/a-tmpMin/a)+tmpMin/a)*a))/1000f;
+    private float random(float a) {
+    	return rangeToRange(sr.nextFloat(20, 80)+sr2.nextFloat(-20, 20),0, 100, 20, 80);
     }
     
     private void setLed(boolean state) {
@@ -232,27 +228,41 @@ public class Client {
     		}
     	}
     }
+    
+    private static float rangeToRange(float valueIn, float inMin, float inMax, float outMin, float outMax) {
+		float tmp = valueIn;
+		tmp = (tmp-inMin) / (inMax-inMin);
+		tmp = (tmp * (outMax - outMin)) + outMin;
+		return tmp;
+	}
 
-    public static void main(String args[]) 
+    public static void main(String args[])
     {    	
+    	
+    	/*SmoothRandom sr = new SmoothRandom(0.3d);
+    	
+    	for(int i = 0 ; i < 100 ; i++) {
+    		System.out.println(i + " : " + sr.nextFloat(0, 100));
+    	}
+    	
+    	System.exit(0);*/
+    	
     	System.out.println("**. Java Client Application - EE402 OOP Module, DCU");
     	try {
-    		if(args.length < 3) {
-    			throw new IllegalArgumentException("3 Parameters needed, " + args.length + " passed");
+    		if(args.length < 2) {
+    			throw new IllegalArgumentException("2 Parameters needed, " + args.length + " passed");
     		}
     		
-    		int portNumber = new Integer(args[1]);
-    		
-    		if(args.length == 4) {
-    			if(args[3].contains("v")) {
+    		if(args.length == 3) {
+    			if(args[2].contains("v")) {
     				verbose = true;
     			}
-    			if(args[3].contains("r")) {
+    			if(args[2].contains("r")) {
     				randomize = true;
     			}
     		}
     		
-    		new Client(args[0], portNumber, args[2]);
+    		new Client(args[0], portNumberStatic, args[1]);
     		
     	}
     	catch(NumberFormatException e) {
@@ -267,8 +277,11 @@ public class Client {
 
 /*
 cd /D D:\Documents\Programme\eclipse-workspace\client_server\bin
-java client_server.Client localhost 5050 client1
+java client_server.Client localhost client
 
 b8:27:eb:49:f7:e5
 169.254.245.74
+
+15h02 un peu avant
+minux
 */

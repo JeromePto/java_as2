@@ -7,20 +7,14 @@ public class DataServerToClient implements Serializable{
 	private static final long serialVersionUID = 2L;
 	private int sampleRate;
 	private String message;
-	private long shift;
 
-	public DataServerToClient(int samplingRate, long shift) {
+	public DataServerToClient(int samplingRate) {
 		this.sampleRate = samplingRate;
-		this.shift = shift;
 		this.message = "CREATED";
 	}
 	
 	public String toString() {
-		return "Sample Rate: " + sampleRate + " Shift: " + shift + " Message: " + message;
-	}
-	
-	public long getShift() {
-		return shift;
+		return "Sample Rate: " + sampleRate + " Message: " + message;
 	}
 	
 	public int getSampleRate() {
@@ -35,9 +29,8 @@ public class DataServerToClient implements Serializable{
 		this.message = message;
 	}
 	
-	public void setShift(long shift) {
-		this.shift = shift;
+	public void setSampleRate(int sampleRate)
+	{
+		this.sampleRate = sampleRate;
 	}
-	
-
 }
