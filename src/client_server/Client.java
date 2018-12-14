@@ -238,15 +238,6 @@ public class Client {
 
     public static void main(String args[])
     {    	
-    	
-    	/*SmoothRandom sr = new SmoothRandom(0.3d);
-    	
-    	for(int i = 0 ; i < 100 ; i++) {
-    		System.out.println(i + " : " + sr.nextFloat(0, 100));
-    	}
-    	
-    	System.exit(0);*/
-    	
     	System.out.println("**. Java Client Application - EE402 OOP Module, DCU");
     	try {
     		if(args.length < 2) {
